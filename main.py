@@ -25,6 +25,11 @@ pretrained='Pretrained'
 
 def main(in_dataset,out_dataset,batch_size):
     
+    
+    for folder in ['./Results/','./CheckPoints/','./Logs/','./Plots/']:
+        if not os.path.exists(folder):
+            os.makedirs(folder)   
+    
     num_classes = {
         'CIFAR10': 10,
         'CIFAR100': 20,
@@ -43,8 +48,7 @@ def main(in_dataset,out_dataset,batch_size):
     
     csv_file_name = f'./Results/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.csv'
     
-    if not os.path.exists('./Results/'):
-        os.makedirs('./Results/')      
+
     
     clean_aucs, adv_aucs = run(csv_file_name, model, train_attack1, test_attack, trainloader, testloader, 1, 10, device, loss_threshold=1e-3, num_classes=num_classes)
 
@@ -66,12 +70,12 @@ def main(in_dataset,out_dataset,batch_size):
     plt.ylabel('Accuracy')
     plt.legend()
     # plt.show()
-    plt.savefig(f'./plots/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.png')
+    plt.savefig(f'./Plots/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.png')
 
 
 
     
-    general_logger = GeneralLogger(f'./logs/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.log')
+    general_logger = GeneralLogger(f'./Logs/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.log')
     
     dummy_attack_name= 'PGD-10'
     dummy_attack = PGD(model, eps=attack_eps, steps=10, alpha=attack_alpha, num_classes=num_classes)
@@ -86,9 +90,7 @@ def main(in_dataset,out_dataset,batch_size):
     
     
     
-    checkpoint_path=f'./CheckPoints/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.cpkt'
-    if not os.path.exists('./CheckPoints/'):
-        os.makedirs('./CheckPoints/')    
+    checkpoint_path=f'./CheckPoints/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.cpkt' 
     torch.save(model.state_dict(), checkpoint_path)
 
 
