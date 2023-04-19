@@ -3,6 +3,7 @@ from torchattacks import PGD as tPGD
 from model import Model
 from Attack import PGD,PGD_CLS,PGD_MSP
 from utils import * 
+import os
 
 
 
@@ -23,6 +24,7 @@ pretrained='Pretrained'
 
 
 def main(in_dataset,out_dataset,batch_size):
+    
     num_classes = {
         'CIFAR10': 10,
         'CIFAR100': 20,
@@ -39,9 +41,15 @@ def main(in_dataset,out_dataset,batch_size):
 
     trainloader,testloader=getLoaders(in_dataset,out_dataset,batch_size)
     
-    csv_file_name = f'{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.csv'
+    csv_file_name = f'./Results/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.csv'
+    
+    if not os.path.exists('./Results/'):
+        os.makedirs('./Results/')      
+    
     clean_aucs, adv_aucs = run(csv_file_name, model, train_attack1, test_attack, trainloader, testloader, 1, 10, device, loss_threshold=1e-3, num_classes=num_classes)
 
+    
+    
     from matplotlib import pyplot as plt
 
     plt.figure(figsize=(10, 7))
@@ -57,15 +65,31 @@ def main(in_dataset,out_dataset,batch_size):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.show()
+    # plt.show()
+    plt.savefig(f'./plots/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.png')
 
 
+
+    
+    general_logger = GeneralLogger(f'./logs/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.log')
+    
     dummy_attack_name= 'PGD-10'
     dummy_attack = PGD(model, eps=attack_eps, steps=10, alpha=attack_alpha, num_classes=num_classes)
-    print(f'AUC & Accuracy Adversarial - {dummy_attack_name} - Started...')
+    # print(f'AUC & Accuracy Adversarial - {dummy_attack_name} - Started...')
+    general_logger.log(f'AUC & Accuracy Adversarial - {dummy_attack_name} - Started...')
     adv_auc, adv_accuracy = auc_softmax_adversarial(model=model, epoch=10, test_loader=testloader, test_attack=dummy_attack, device=device, num_classes=num_classes)
-    print(f'AUC Adversairal {dummy_attack_name} - score on epoch {10} is: {adv_auc * 100}')
-    print(f'Accuracy Adversairal {dummy_attack_name} -  score on epoch {10} is: {adv_accuracy * 100}')
+    # print(f'AUC Adversairal {dummy_attack_name} - score on epoch {10} is: {adv_auc * 100}')
+    general_logger.log(f'AUC Adversairal {dummy_attack_name} - score on epoch {10} is: {adv_auc * 100}')
+    # print(f'Accuracy Adversairal {dummy_attack_name} -  score on epoch {10} is: {adv_accuracy * 100}')
+    general_logger.log(f'Accuracy Adversairal {dummy_attack_name} -  score on epoch {10} is: {adv_accuracy * 100}')
+    
+    
+    
+    
+    checkpoint_path=f'./CheckPoints/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.cpkt'
+    if not os.path.exists('./CheckPoints/'):
+        os.makedirs('./CheckPoints/')    
+    torch.save(model.state_dict(), checkpoint_path)
 
 
 

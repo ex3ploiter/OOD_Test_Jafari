@@ -23,6 +23,8 @@ import torchvision.transforms.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
 
+import torch.nn as nn
+
 
 transform_224 = [transforms.Resize([224, 224]), transforms.ToTensor()]
 transform_224_imagenetc = [transforms.Resize([224, 224]), transforms.RandomHorizontalFlip()]
@@ -498,4 +500,29 @@ def train_one_epoch(epoch, max_epochs, model, optimizer, criterion, trainloader,
 
     return  accuracy_score(true_labels, preds, normalize=True), \
             running_loss / len(preds)
+    
+    
+    
+import logging
+
+class GeneralLogger:
+    def __init__(self, log_file):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        self.log_file = log_file
+        
+        # create a file handler and set its level to INFO
+        handler = logging.FileHandler(log_file)
+        handler.setLevel(logging.INFO)
+
+        # create a logging format
+        formatter = logging.Formatter('%(asctime)s %(message)s')
+        handler.setFormatter(formatter)
+
+        # add the handler to the logger
+        self.logger.addHandler(handler)
+
+    def log(self, message):
+        # log the message
+        self.logger.info(message)
     
