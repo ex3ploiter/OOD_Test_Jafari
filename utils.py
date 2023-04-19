@@ -71,7 +71,7 @@ class ImageNetDataset(torch.utils.data.Dataset):
 
 
 
-def getLoaders(in_dataset,out_dataset):
+def getLoaders(in_dataset,out_dataset,batch_size):
 
     num_classes = {
         'CIFAR10': 10,

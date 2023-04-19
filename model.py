@@ -42,12 +42,18 @@ def get_robust(arch, path):
 def download_and_load_backnone(url, model_name):
     arch = '_'.join(model_name.split('_')[:-2])
     print(arch, model_name)
+
+
+    if not os.path.exists('./robust_pretrained_models/'):
+        os.makedirs('./robust_pretrained_models/')    
+
+
     ckpt_path = os.path.join('./robust_pretrained_models/', f'{model_name}.ckpt')
     
     # Check if checkpoint file already exists
+
+    
     if os.path.exists(ckpt_path):
-        if not os.path.exists('./robust_pretrained_models/'):
-            os.makedirs('./robust_pretrained_models/')
         print(f'{model_name} checkpoint file already exists.')
         return get_robust(arch, ckpt_path)
 

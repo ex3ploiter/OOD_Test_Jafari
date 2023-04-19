@@ -5,6 +5,14 @@ from Attack import PGD,PGD_CLS,PGD_MSP
 from utils import * 
 
 
+
+device = None
+
+try:
+    device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
+except:
+    raise ValueError('Wrong CUDA Device!')
+
 attack_eps = 4/255
 attack_steps = 10
 attack_alpha = 2.5 * attack_eps / attack_steps
@@ -14,7 +22,7 @@ selected_model_adv='Robust_resnet18_linf_eps8.0'
 pretrained='Pretrained'
 
 
-def main(in_dataset,out_dataset):
+def main(in_dataset,out_dataset,batch_size):
     num_classes = {
         'CIFAR10': 10,
         'CIFAR100': 20,
@@ -28,14 +36,8 @@ def main(in_dataset,out_dataset):
     train_attack1 = PGD_CLS(model, eps=attack_eps, steps=10, alpha=attack_alpha)
     test_attack = PGD_MSP(model, eps=attack_eps, steps=10, alpha=attack_alpha, num_classes=num_classes)
 
-    device = None
 
-    try:
-        device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
-    except:
-        raise ValueError('Wrong CUDA Device!')
-
-    trainloader,testloader=getLoaders(in_dataset,out_dataset)
+    trainloader,testloader=getLoaders(in_dataset,out_dataset,batch_size)
     
     csv_file_name = f'{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.csv'
     clean_aucs, adv_aucs = run(csv_file_name, model, train_attack1, test_attack, trainloader, testloader, 1, 10, device, loss_threshold=1e-3, num_classes=num_classes)
@@ -74,8 +76,9 @@ import argparse
 parser = argparse.ArgumentParser(description='Process input and output datasets.')
 parser.add_argument('--in_dataset', type=str, help='Path to input dataset file.')
 parser.add_argument('--out_dataset', type=str, help='Path to output dataset file.')
+parser.add_argument('--batch_size',default=128, type=int, help='Path to output dataset file.')
 args = parser.parse_args()
 
 
-main(args.in_dataset,args.out_dataset)
+main(args.in_dataset,args.out_dataset,args.batch_size)
 
