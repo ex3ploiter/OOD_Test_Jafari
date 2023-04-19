@@ -3,6 +3,13 @@ import ipywidgets as widgets
 import requests
 from torchvision import models
 
+try:
+    device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
+except:
+    raise ValueError('Wrong CUDA Device!')
+
+
+
 def get_robust(arch, path):
     backbone = None
     

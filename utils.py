@@ -28,6 +28,12 @@ transform_224 = [transforms.Resize([224, 224]), transforms.ToTensor()]
 transform_224_imagenetc = [transforms.Resize([224, 224]), transforms.RandomHorizontalFlip()]
 transform_224_test = [transforms.Resize([224, 224]), transforms.ToTensor()]
 
+try:
+    device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
+except:
+    raise ValueError('Wrong CUDA Device!')
+
+
 
 def sparse2coarse(targets):
     """Convert Pytorch CIFAR100 sparse targets to coarse targets.
