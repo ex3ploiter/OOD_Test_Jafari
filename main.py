@@ -72,8 +72,8 @@ import argparse
 
 
 parser = argparse.ArgumentParser(description='Process input and output datasets.')
-parser.add_argument('in_dataset', type=str, help='Path to input dataset file.')
-parser.add_argument('out_dataset', type=str, help='Path to output dataset file.')
+parser.add_argument('--in_dataset', type=str, help='Path to input dataset file.')
+parser.add_argument('--out_dataset', type=str, help='Path to output dataset file.')
 args = parser.parse_args()
 
 
