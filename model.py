@@ -46,6 +46,8 @@ def download_and_load_backnone(url, model_name):
     
     # Check if checkpoint file already exists
     if os.path.exists(ckpt_path):
+        if not os.path.exists('./robust_pretrained_models/'):
+            os.makedirs('./robust_pretrained_models/')
         print(f'{model_name} checkpoint file already exists.')
         return get_robust(arch, ckpt_path)
 
