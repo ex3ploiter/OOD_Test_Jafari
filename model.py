@@ -3,6 +3,18 @@ import ipywidgets as widgets
 import requests
 from torchvision import models
 
+import os
+import random
+import torch
+import torchvision
+from torchvision.datasets import CIFAR100
+from torchvision.datasets import CIFAR10
+from torchvision import transforms
+from torchvision.transforms import functional as F
+from glob import glob
+import numpy as np
+from PIL import Image
+
 try:
     device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
 except:
