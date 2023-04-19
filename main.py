@@ -68,6 +68,7 @@ def main(in_dataset,out_dataset):
 
 
 
+
 import argparse
 
 
@@ -77,5 +78,5 @@ parser.add_argument('--out_dataset', type=str, help='Path to output dataset file
 args = parser.parse_args()
 
 
-main(args.in_dataset)
-main(args.out_dataset)
+main(args.in_dataset,args.out_dataset)
+
