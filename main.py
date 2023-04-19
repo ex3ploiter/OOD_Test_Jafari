@@ -77,8 +77,9 @@ def main(in_dataset,out_dataset,batch_size):
     
     general_logger = GeneralLogger(f'./Logs/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.log')
     
-    dummy_attack_name= 'PGD-10'
-    dummy_attack = PGD(model, eps=attack_eps, steps=10, alpha=attack_alpha, num_classes=num_classes)
+    dummy_attack_name= 'PGD-40'
+    # dummy_attack = PGD(model, eps=attack_eps, steps=10, alpha=attack_alpha, num_classes=num_classes)
+    dummy_attack = PGD_MSP(model, eps=attack_eps, steps=40, alpha=attack_alpha, num_classes=num_classes)
     # print(f'AUC & Accuracy Adversarial - {dummy_attack_name} - Started...')
     general_logger.log(f'AUC & Accuracy Adversarial - {dummy_attack_name} - Started...')
     adv_auc, adv_accuracy = auc_softmax_adversarial(model=model, epoch=10, test_loader=testloader, test_attack=dummy_attack, device=device, num_classes=num_classes)
