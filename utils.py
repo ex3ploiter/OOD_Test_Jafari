@@ -606,7 +606,7 @@ class GeneralLogger:
 def download_gdrive(gdrive_id, fname_save):
     """ source: https://stackoverflow.com/questions/38511444/python-download-files-from-google-drive-using-url """
 
-    if not os.path.isfile(fname_save):
+    if  os.path.isfile(fname_save):
         print("File already exists.")
         return 
     

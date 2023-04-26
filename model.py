@@ -137,8 +137,10 @@ class Model_FromScratch(torch.nn.Module):
         self.norm = lambda x: ( x - mu ) / std
         self.backbone = WideResNet(depth=28,widen_factor=10,num_classes=num_classes + 1).to(device)
     def forward(self, x):
+        print("1 : ",x.shape)
         x = self.norm(x)
         z = self.backbone(x)
+        print("2 : ",z.shape)
         return z  
     
 
@@ -151,8 +153,10 @@ class Model_Pretrain(torch.nn.Module):
             os.makedirs('./robust_pretrained_models/')    
 
         self.norm = lambda x: ( x - mu ) / std
+        
+        print("num_classes : ",num_classes)
         if num_classes==10:
-            model=DMWideResNet(num_classes=10,
+            self.model=DMWideResNet(num_classes=10,
                                  depth=28,
                                  width=10,
                                  activation_fn=Swish,
@@ -161,9 +165,10 @@ class Model_Pretrain(torch.nn.Module):
             download_gdrive('16ChNkterCp17BXv-xxqpfedb4u2_CjjS','./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR10.pt')
             checkpoint = torch.load('./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR10.pt')
             
+            
         
-        elif num_classes==10:
-            model=DMWideResNet(num_classes=100,
+        elif num_classes==20:
+            self.model=DMWideResNet(num_classes=100,
                              depth=28,
                              width=10,
                              activation_fn=Swish,
@@ -172,10 +177,11 @@ class Model_Pretrain(torch.nn.Module):
             download_gdrive('1VDDM_j5M4b6sZpt1Nnhkr8FER3kjE33M','./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR100.pt')            
             checkpoint = torch.load('./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR100.pt')
         
-        model.load_state_dict(checkpoint['state_dict'], strict=False)
-        self.backbone = WideResNet(depth=28,widen_factor=10,num_classes=num_classes + 1).to(device)
+        self.model.load_state_dict(checkpoint, strict=False)
+        # self.backbone = WideResNet(depth=28,widen_factor=10,num_classes=num_classes + 1).to(device)
 
     def forward(self, x):
         x = self.norm(x)
-        z = self.backbone(x)
+        z = self.model(x)
+        
         return z  
