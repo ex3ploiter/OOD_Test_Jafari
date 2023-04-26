@@ -41,10 +41,10 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
     # model = Model(backbone=selected_model_adv, pretrained=pretrained, num_classes=num_classes).to(device)
 
     if pretrain=='False':
-        Model_FromScratch(num_classes=num_classes).to(device)
+        model=Model_FromScratch(num_classes=num_classes).to(device)
 
     else :
-        Model_Pretrain(num_classes=num_classes).to(device)
+        model=Model_Pretrain(num_classes=num_classes).to(device)
 
 
     train_attack1 = PGD_CLS(model, eps=attack_eps, steps=10, alpha=attack_alpha)
