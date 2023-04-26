@@ -24,6 +24,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import torch.nn as nn
+import os
+import urllib.request
+import tarfile
+import shutil
+import subprocess
 
 
 transform_224 = [transforms.Resize([224, 224]), transforms.ToTensor()]
@@ -71,6 +76,17 @@ class ImageNetDataset(torch.utils.data.Dataset):
             img = self.transform(img)
         return img, self.label
 
+def copy_file(src, dst):
+    shutil.copy(src, dst)
+
+def download_file(url, path):
+    filename = os.path.join(path, url.split('/')[-1])
+    if os.path.exists(filename):
+        print(f"File {filename} already exists.")
+    else:
+        os.makedirs(path, exist_ok=True)  # create directory if it doesn't exist
+        urllib.request.urlretrieve(url, filename)
+        print(f"File {filename} downloaded successfully.")
 
 
 def getLoaders(in_dataset,out_dataset,batch_size):
@@ -91,7 +107,45 @@ def getLoaders(in_dataset,out_dataset,batch_size):
 
     train_dataset = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=True, download=True, transform=transforms.Compose(transform_224))')
     test_dataset_in = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=False, download=True, transform=transforms.Compose(transform_224))')
-    test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("./{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_224_test))')
+    
+    if out_dataset in ['MNIST','CIFAR10','CIFAR100']:
+      test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("./{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_224_test))')
+    
+    elif out_dataset =='LSUN':
+        # test_dataset_out = eval(f"torchvision.datasets.{out_dataset}('./{out_dataset}', classes='test', transform=transforms.Compose(transform_224_test))")
+
+        os.chmod('./downloadLSUN.sh', 0o755)
+        result = subprocess.run('./downloadLSUN.sh', shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        
+        test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './LSUN_resize', transform =transform=transforms.Compose(transform_224_test))")
+
+        
+
+    
+    elif out_dataset =='Places365':
+    
+        URLs=['https://dl.dropboxusercontent.com/s/3pwqsyv33f6if3z/val_256.tar','https://dl.dropboxusercontent.com/s/gaf1ygpdnkhzyjo/places365_val.txt','https://dl.dropboxusercontent.com/s/enr71zpolzi1xzm/categories_places365.txt']
+        for url in URLs:
+            download_file(url,'./downloaded_files')
+        
+        # if not os.path.exists('./Places365'):
+        #     os.makedirs('./Places365', exist_ok=True)
+        tar = tarfile.open('./downloaded_files/val_256.tar', 'r')
+        tar.extractall('./')
+        tar.close()
+        
+        copy_file('./downloaded_files/places365_val.txt','./val_256/places365_val.txt')
+        copy_file('./downloaded_files/categories_places365.txt','./val_256/categories_places365.txt')
+
+
+        test_dataset_out = eval(f"torchvision.datasets.Places365('./val_256', split = 'val',small = True, transform=transforms.Compose(transform_224_test))")
+        
+
+    elif out_dataset =='COIL-100':
+      # test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("./{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_224_test))')
+
+
+      test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './{out_dataset}/', transform =transform=transforms.Compose(transform_224_test))")
 
 
     if in_dataset == 'CIFAR100':
