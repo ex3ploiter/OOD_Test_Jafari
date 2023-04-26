@@ -14,6 +14,10 @@ from torchvision.transforms import functional as F
 from glob import glob
 import numpy as np
 from PIL import Image
+from wideresnet import WideResNet
+from utils import download_gdrive
+
+from dm_wide_resnet import DMWideResNet,CIFAR10_MEAN, CIFAR10_STD,CIFAR100_MEAN, CIFAR100_STD,Swish
 
 try:
     device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
@@ -119,6 +123,57 @@ class Model(torch.nn.Module):
         self.backbone = load(backbone, pretrained).to(device)
         in_features = self.backbone.fc.in_features
         self.backbone.fc = nn.Linear(in_features, num_classes + 1)
+
+    def forward(self, x):
+        x = self.norm(x)
+        z = self.backbone(x)
+        return z  
+    
+
+
+class Model_FromScratch(torch.nn.Module):
+    def __init__(self, num_classes: int):
+        super().__init__()
+        self.norm = lambda x: ( x - mu ) / std
+        self.backbone = WideResNet(depth=28,widen_factor=10,num_classes=num_classes + 1).to(device)
+    def forward(self, x):
+        x = self.norm(x)
+        z = self.backbone(x)
+        return z  
+    
+
+
+class Model_Pretrain(torch.nn.Module):
+    def __init__(self, num_classes: int):
+        super().__init__()
+
+        if not os.path.exists('./robust_pretrained_models/'):
+            os.makedirs('./robust_pretrained_models/')    
+
+        self.norm = lambda x: ( x - mu ) / std
+        if num_classes==10:
+            model=DMWideResNet(num_classes=10,
+                                 depth=28,
+                                 width=10,
+                                 activation_fn=Swish,
+                                 mean=CIFAR10_MEAN,
+                                 std=CIFAR10_STD)
+            download_gdrive('16ChNkterCp17BXv-xxqpfedb4u2_CjjS','./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR10.pt')
+            checkpoint = torch.load('./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR10.pt')
+            
+        
+        elif num_classes==10:
+            model=DMWideResNet(num_classes=100,
+                             depth=28,
+                             width=10,
+                             activation_fn=Swish,
+                             mean=CIFAR100_MEAN,
+                             std=CIFAR100_STD)
+            download_gdrive('1VDDM_j5M4b6sZpt1Nnhkr8FER3kjE33M','./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR100.pt')            
+            checkpoint = torch.load('./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR100.pt')
+        
+        model.load_state_dict(checkpoint['state_dict'], strict=False)
+        self.backbone = WideResNet(depth=28,widen_factor=10,num_classes=num_classes + 1).to(device)
 
     def forward(self, x):
         x = self.norm(x)

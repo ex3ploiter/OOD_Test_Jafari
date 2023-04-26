@@ -1,9 +1,10 @@
 import torch
 from torchattacks import PGD as tPGD
-from model import Model
+from model import Model,Model_Pretrain,Model_FromScratch
 from Attack import PGD,PGD_CLS,PGD_MSP
 from utils import * 
 import os
+
 
 
 
@@ -23,7 +24,7 @@ selected_model_adv='Robust_resnet18_linf_eps8.0'
 pretrained='Pretrained'
 
 
-def main(in_dataset,out_dataset,batch_size):
+def main(in_dataset,out_dataset,batch_size,pretrain):
     
     
     for folder in ['./Results/','./CheckPoints/','./Logs/','./Plots/']:
@@ -37,7 +38,13 @@ def main(in_dataset,out_dataset,batch_size):
         'FashionMNIST': 10,
     }[in_dataset]
 
-    model = Model(backbone=selected_model_adv, pretrained=pretrained, num_classes=num_classes).to(device)
+    # model = Model(backbone=selected_model_adv, pretrained=pretrained, num_classes=num_classes).to(device)
+
+    if pretrain=='False':
+        Model_FromScratch(num_classes=num_classes).to(device)
+
+    else :
+        Model_Pretrain(num_classes=num_classes).to(device)
 
 
     train_attack1 = PGD_CLS(model, eps=attack_eps, steps=10, alpha=attack_alpha)
@@ -104,8 +111,10 @@ parser = argparse.ArgumentParser(description='Process input and output datasets.
 parser.add_argument('--in_dataset', type=str, help='Path to input dataset file.')
 parser.add_argument('--out_dataset', type=str, help='Path to output dataset file.')
 parser.add_argument('--batch_size',default=128, type=int, help='Path to output dataset file.')
+parser.add_argument('--pretrain',default='False', type=str)
+
 args = parser.parse_args()
 
 
-main(args.in_dataset,args.out_dataset,args.batch_size)
+main(args.in_dataset,args.out_dataset,args.batch_size,args.pretrain)
 
