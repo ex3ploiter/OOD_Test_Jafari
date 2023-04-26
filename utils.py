@@ -29,6 +29,7 @@ import urllib.request
 import tarfile
 import shutil
 import subprocess
+import zipfile
 
 
 transform_224 = [transforms.Resize([224, 224]), transforms.ToTensor()]
@@ -112,14 +113,11 @@ def getLoaders(in_dataset,out_dataset,batch_size):
       test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("./{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_224_test))')
     
     elif out_dataset =='LSUN':
-        # test_dataset_out = eval(f"torchvision.datasets.{out_dataset}('./{out_dataset}', classes='test', transform=transforms.Compose(transform_224_test))")
+        
 
         os.chmod('./downloadLSUN.sh', 0o755)
         result = subprocess.run('./downloadLSUN.sh', shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        
-        test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './LSUN_resize', transform =transform=transforms.Compose(transform_224_test))")
-
-        
+        test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './LSUN_resize',transform=transforms.Compose(transform_224_test))")
 
     
     elif out_dataset =='Places365':
@@ -128,8 +126,7 @@ def getLoaders(in_dataset,out_dataset,batch_size):
         for url in URLs:
             download_file(url,'./downloaded_files')
         
-        # if not os.path.exists('./Places365'):
-        #     os.makedirs('./Places365', exist_ok=True)
+        
         tar = tarfile.open('./downloaded_files/val_256.tar', 'r')
         tar.extractall('./')
         tar.close()
@@ -144,10 +141,15 @@ def getLoaders(in_dataset,out_dataset,batch_size):
     elif out_dataset =='COIL-100':
       # test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("./{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_224_test))')
 
+        download_file('http://www.cs.columbia.edu/CAVE/databases/SLAM_coil-20_coil-100/coil-100/coil-100.zip','./downloaded_files')
+        with zipfile.ZipFile('./downloaded_files/coil-100.zip', 'r') as zip_ref:
+            zip_ref.extractall('./coil-100')
 
-      test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './{out_dataset}/', transform =transform=transforms.Compose(transform_224_test))")
+        test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './coil-100', transform =transforms.Compose(transform_224_test))")
 
 
+    print(f"test_dataset_out : {len(test_dataset_out)}")
+    
     if in_dataset == 'CIFAR100':
         train_dataset.targets = sparse2coarse(train_dataset.targets)
         test_dataset_in.targets = sparse2coarse(test_dataset_in.targets)
