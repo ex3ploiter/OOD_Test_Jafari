@@ -56,6 +56,11 @@ transform_224 = [transforms.Resize([224, 224]), transforms.ToTensor()]
 transform_224_imagenetc = [transforms.Resize([224, 224]), transforms.RandomHorizontalFlip()]
 transform_224_test = [transforms.Resize([224, 224]), transforms.ToTensor()]
 
+transform_32 = [transforms.Resize([32, 32]), transforms.ToTensor()]
+transform_32_imagenetc = [transforms.Resize([32, 32]), transforms.RandomHorizontalFlip()]
+transform_32_test = [transforms.Resize([32, 32]), transforms.ToTensor()]
+
+
 try:
     device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
 except:
@@ -126,11 +131,11 @@ def getLoaders(in_dataset,out_dataset,batch_size):
     if out_dataset in ["MNIST", "FashionMNIST"]:
         transform_224_test.insert(1, transforms.Grayscale(num_output_channels=3))
 
-    train_dataset = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=True, download=True, transform=transforms.Compose(transform_224))')
-    test_dataset_in = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=False, download=True, transform=transforms.Compose(transform_224))')
+    train_dataset = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=True, download=True, transform=transforms.Compose(transform_32))')
+    test_dataset_in = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=False, download=True, transform=transforms.Compose(transform_32))')
     
     if out_dataset in ['MNIST','CIFAR10','CIFAR100']:
-      test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("./{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_224_test))')
+      test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("./{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_32_test))')
     
     elif out_dataset =='LSUN':
         
@@ -155,7 +160,7 @@ def getLoaders(in_dataset,out_dataset,batch_size):
         copy_file('./downloaded_files/categories_places365.txt','./val_256/categories_places365.txt')
 
 
-        test_dataset_out = eval(f"torchvision.datasets.Places365('./val_256', split = 'val',small = True, transform=transforms.Compose(transform_224_test))")
+        test_dataset_out = eval(f"torchvision.datasets.Places365('./val_256', split = 'val',small = True, transform=transforms.Compose(transform_32_test))")
         
 
     elif out_dataset =='COIL-100':
@@ -165,7 +170,7 @@ def getLoaders(in_dataset,out_dataset,batch_size):
         with zipfile.ZipFile('./downloaded_files/coil-100.zip', 'r') as zip_ref:
             zip_ref.extractall('./coil-100')
 
-        test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './coil-100', transform =transforms.Compose(transform_224_test))")
+        test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './coil-100', transform =transforms.Compose(transform_32_test))")
 
 
     print(f"test_dataset_out : {len(test_dataset_out)}")
