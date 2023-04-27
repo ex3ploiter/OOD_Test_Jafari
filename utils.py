@@ -125,11 +125,11 @@ def getLoaders(in_dataset,out_dataset,batch_size):
     }[in_dataset]
 
     if in_dataset in ["MNIST", "FashionMNIST"]:
-        transform_224.insert(1, transforms.Grayscale(num_output_channels=3))
-        transform_224_imagenetc.insert(1, transforms.Grayscale(num_output_channels=3))
+        transform_32.insert(1, transforms.Grayscale(num_output_channels=3))
+        transform_32_imagenetc.insert(1, transforms.Grayscale(num_output_channels=3))
 
     if out_dataset in ["MNIST", "FashionMNIST"]:
-        transform_224_test.insert(1, transforms.Grayscale(num_output_channels=3))
+        transform_32_test.insert(1, transforms.Grayscale(num_output_channels=3))
 
     train_dataset = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=True, download=True, transform=transforms.Compose(transform_32))')
     test_dataset_in = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=False, download=True, transform=transforms.Compose(transform_32))')
@@ -142,7 +142,7 @@ def getLoaders(in_dataset,out_dataset,batch_size):
 
         os.chmod('./downloadLSUN.sh', 0o755)
         result = subprocess.run('./downloadLSUN.sh', shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './LSUN_resize',transform=transforms.Compose(transform_224_test))")
+        test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './LSUN_resize',transform=transforms.Compose(transform_32_test))")
 
     
     elif out_dataset =='Places365':
@@ -197,7 +197,7 @@ def getLoaders(in_dataset,out_dataset,batch_size):
 
     # Create a dataset with the selected ImageNet images and the last label (num_classes - 1)
     imagenet_label = num_classes
-    imagenet_train_data = ImageNetDataset(selected_imagenet_data, imagenet_label, transforms.Compose(transform_224_imagenetc))
+    imagenet_train_data = ImageNetDataset(selected_imagenet_data, imagenet_label, transforms.Compose(transform_32_imagenetc))
 
     trainset = torch.utils.data.ConcatDataset([train_dataset, imagenet_train_data])
     testset = torch.utils.data.ConcatDataset([test_dataset_in, test_dataset_out])
