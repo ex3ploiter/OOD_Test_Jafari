@@ -15,18 +15,27 @@ try:
 except:
     raise ValueError('Wrong CUDA Device!')
 
-attack_eps = 4/255
+# attack_eps = 4/255
 attack_steps = 10
-attack_alpha = 2.5 * attack_eps / attack_steps
+# attack_alpha = 2.5 * attack_eps / attack_steps
 
 
-selected_model_adv='Robust_resnet18_linf_eps8.0'
-pretrained='Pretrained'
+# selected_model_adv='Robust_resnet18_linf_eps8.0'
+# pretrained='Pretrained'
 
 
-def main(in_dataset,out_dataset,batch_size,pretrain,run_type='Train'):
+def main(in_dataset,out_dataset,batch_size,pretrain):
+    if pretrain==True:
+        attack_eps = 4/255
+        selected_model_adv="Pang2022Robustness_WRN28_10"
     
-    
+    else:
+        attack_eps = 8/255
+        selected_model_adv="WideResNet"
+
+    attack_alpha = 2.5 * attack_eps / attack_steps
+
+
     for folder in ['./Results/','./CheckPoints/','./Logs/','./Plots/']:
         if not os.path.exists(folder):
             os.makedirs(folder)   
@@ -98,10 +107,8 @@ def main(in_dataset,out_dataset,batch_size,pretrain,run_type='Train'):
     
     
     
-    checkpoint_path=f'./CheckPoints/{in_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.cpkt' 
+    checkpoint_path=f'./CheckPoints/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.cpkt' 
     torch.save(model.state_dict(), checkpoint_path)
-
-
 
 
 import argparse
