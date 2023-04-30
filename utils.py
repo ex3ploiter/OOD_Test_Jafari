@@ -445,10 +445,10 @@ import csv
 
 
 
-def run(csv_filename, model, train_attack, test_attack, trainloader, testloader, test_step:int, max_epochs:int, device, loss_threshold=1e-3, num_classes=10):
+def run(csv_filename, model, train_attack, test_attack, trainloader, testloader, test_step:int, max_epochs:int, device, loss_threshold, num_classes,optimizer,lr):
 
 #     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
 #     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.5, 0.999))
 
     criterion = nn.CrossEntropyLoss()
@@ -488,7 +488,7 @@ def run(csv_filename, model, train_attack, test_attack, trainloader, testloader,
                                                                     criterion=criterion,\
                                                                     trainloader=trainloader,\
                                                                     train_attack=train_attack,\
-                                                                    lr=0.001,\
+                                                                    lr=lr,\
                                                                     device=device)
             
             print("train accuracy is ", train_accuracy)

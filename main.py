@@ -51,9 +51,13 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
 
     if pretrain=='False':
         model=Model_FromScratch(num_classes=num_classes).to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.5, 0.999))
+        lr=0.0001
 
     else :
         model=Model_Pretrain(num_classes=num_classes).to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.5, 0.999))
+        lr=0.0001
 
 
     train_attack1 = PGD_CLS(model, eps=attack_eps, steps=10, alpha=attack_alpha)
@@ -65,7 +69,8 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
     csv_file_name = f'./Results/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.csv'
     
 
-    clean_aucs, adv_aucs = run(csv_file_name, model, train_attack1, test_attack, trainloader, testloader, 1, 10, device, loss_threshold=1e-3, num_classes=num_classes)
+    clean_aucs, adv_aucs = run(csv_filename=csv_file_name,model= model, train_attack=train_attack1,test_attack= test_attack, trainloader=trainloader, testloader=testloader, 
+                               test_step=1, max_epochs=10, device=device, loss_threshold=1e-3, num_classes=num_classes,optimizer=optimizer,lr=lr)
     
     
     
