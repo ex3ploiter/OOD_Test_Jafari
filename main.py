@@ -58,13 +58,7 @@ def main(in_dataset,out_dataset,batch_size,pretrain,run_type='Train'):
 
     clean_aucs, adv_aucs = run(csv_file_name, model, train_attack1, test_attack, trainloader, testloader, 1, 10, device, loss_threshold=1e-3, num_classes=num_classes)
     
-    # if run_type=='Train':
-    #     model = run_train(csv_file_name, model, train_attack1, test_attack, trainloader, testloader, 1, 10, device, loss_threshold=1e-3, num_classes=num_classes)
     
-    # if run_type=='Test':
-    #     state_dict = torch.load('./CheckPoints/{in_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.cpkt')
-    #     model.load_state_dict(state_dict)
-    #     clean_aucs, adv_aucs = run_test(csv_file_name, model, train_attack1, test_attack, trainloader, testloader, 1, 10, device, loss_threshold=1e-3, num_classes=num_classes)
     
     
     from matplotlib import pyplot as plt
