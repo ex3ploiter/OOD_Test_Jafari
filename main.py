@@ -72,11 +72,14 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
 
 
     trainloader,testloader=getLoaders(in_dataset,out_dataset,batch_size)
+
+    
     
     csv_file_name = f'./Results/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.csv'
     
 
-    clean_aucs, adv_aucs = run(csv_filename=csv_file_name,model= model, train_attack=train_attack1,test_attack= test_attack, trainloader=trainloader, testloader=testloader, 
+    clean_aucs, adv_aucs = run(csv_filename=csv_file_name,model= model, train_attack=train_attack1,test_attack= test_attack, trainloader=trainloader
+                               , testloader=testloader, 
                                test_step=1, max_epochs=10, device=device, loss_threshold=1e-3, num_classes=num_classes,optimizer=optimizer,lr=lr)
     
     

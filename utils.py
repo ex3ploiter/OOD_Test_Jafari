@@ -144,6 +144,8 @@ def getLoaders(in_dataset,out_dataset,batch_size):
         result = subprocess.run('./downloadLSUN.sh', shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './LSUN_resize',transform=transforms.Compose(transform_32_test))")
 
+        test_dataset_out.samples = [(i,num_classes) for (i,j) in test_dataset_out.samples]
+
     
     elif out_dataset =='Places365':
     
@@ -171,6 +173,8 @@ def getLoaders(in_dataset,out_dataset,batch_size):
             zip_ref.extractall('./coil-100')
 
         test_dataset_out=eval(f"torchvision.datasets.ImageFolder(root = './coil-100', transform =transforms.Compose(transform_32_test))")
+
+        test_dataset_out.samples = [(i,num_classes) for (i,j) in test_dataset_out.samples]
 
 
     print(f"test_dataset_out : {len(test_dataset_out)}")
