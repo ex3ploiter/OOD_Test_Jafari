@@ -202,9 +202,9 @@ def getLoaders(in_dataset,out_dataset,batch_size):
     trainset = torch.utils.data.ConcatDataset([train_dataset, imagenet_train_data])
     testset = torch.utils.data.ConcatDataset([test_dataset_in, test_dataset_out])
 
-    trainloader = DataLoader(trainset, shuffle=True, batch_size=batch_size)
-    testloader = DataLoader(testset, shuffle=False, batch_size=batch_size//2)
-    shuffled_testloader = DataLoader(testset, shuffle=True, batch_size=batch_size//2)
+    trainloader = DataLoader(trainset, shuffle=True, batch_size=batch_size,num_workers=2)
+    testloader = DataLoader(testset, shuffle=False, batch_size=batch_size//2,num_workers=2)
+    shuffled_testloader = DataLoader(testset, shuffle=True, batch_size=batch_size//2,num_workers=2)
 
 
     print(f"Length of train dataset: {len(trainset)}")
@@ -440,6 +440,102 @@ def unique_filename(filename):
     return filename
 
 import csv
+
+
+
+def run_train( model, train_attack, test_attack, trainloader, testloader, test_step:int, max_epochs:int, device, loss_threshold=1e-3, num_classes=10):
+
+
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+
+    criterion = nn.CrossEntropyLoss()
+    init_epoch = 0
+
+    clean_aucs = []
+    adv_aucs = []
+
+    
+    
+    print(f'Starting Run from epoch {init_epoch}')
+    
+    for epoch in range(init_epoch, max_epochs+1):
+
+        torch.cuda.empty_cache()
+
+        
+
+
+        
+        if epoch < max_epochs:
+            print(f'====== Starting Training on epoch {epoch}')
+            train_accuracy, train_loss = train_one_epoch(epoch=epoch,\
+                                                                    max_epochs=max_epochs, \
+                                                                    model=model,\
+                                                                    optimizer=optimizer,
+                                                                    criterion=criterion,\
+                                                                    trainloader=trainloader,\
+                                                                    train_attack=train_attack,\
+                                                                    lr=0.001,\
+                                                                    device=device)
+            
+            print("train accuracy is ", train_accuracy)
+            print("train loss is ", train_loss)
+            if train_loss < loss_threshold:
+                break
+    return model
+
+def run_test(csv_filename, model, train_attack, test_attack, trainloader, testloader, test_step:int, max_epochs:int, device, loss_threshold=1e-3, num_classes=10):
+
+#     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
+
+
+    # Generate a unique filename if the file already exists
+    csv_filename = unique_filename(csv_filename)
+    
+    print(f'Results Will be Saved To {csv_filename}.')
+
+    # Write the header to the CSV file
+    with open(csv_filename, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        header = ['Epoch', 'AUC-Clean', 'Accuracy-Clean', 'AUC-Adversarial', 'Accuracy-Adversarial', 'Train-Loss', 'Train-Accuracy']
+        csvwriter.writerow(header)
+
+    
+    
+    
+
+            test_auc = {}
+            test_accuracy = {}
+
+            print(f'AUC & Accuracy Vanila - Started...')
+            clean_auc, clean_accuracy  = auc_softmax(model=model, epoch=epoch, test_loader=testloader, device=device, num_classes=num_classes)
+            test_auc['Clean'], test_accuracy['Clean'] = clean_auc, clean_accuracy
+            print(f'AUC Vanila - score on epoch {epoch} is: {clean_auc * 100}')
+            print(f'Accuracy Vanila -  score on epoch {epoch} is: {clean_accuracy * 100}')
+            logs[f'AUC-Clean'], logs[f'Accuracy-Clean'] = clean_auc, clean_accuracy
+
+            attack_name = 'PGD-10'
+            attack = test_attack
+            print(f'AUC & Accuracy Adversarial - {attack_name} - Started...')
+            adv_auc, adv_accuracy = auc_softmax_adversarial(model=model, epoch=epoch, test_loader=testloader, test_attack=attack, device=device, num_classes=num_classes)
+            print(f'AUC Adversairal {attack_name} - score on epoch {epoch} is: {adv_auc * 100}')
+            print(f'Accuracy Adversairal {attack_name} -  score on epoch {epoch} is: {adv_accuracy * 100}')
+
+            torch.cuda.empty_cache()
+
+            clean_aucs.append(clean_auc)
+            adv_aucs.append(adv_auc)
+            
+            # Update the row with the test results
+            with open(csv_filename, 'a', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                row = [epoch, clean_auc, clean_accuracy, adv_auc, adv_accuracy, train_loss if epoch < max_epochs else '', train_accuracy if epoch < max_epochs else '']
+                csvwriter.writerow(row)
+
+
+
+    return clean_aucs, adv_aucs
+
 
 
 def run(csv_filename, model, train_attack, test_attack, trainloader, testloader, test_step:int, max_epochs:int, device, loss_threshold=1e-3, num_classes=10):

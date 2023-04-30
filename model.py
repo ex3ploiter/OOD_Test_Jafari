@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image
 from wideresnet import WideResNet
 from utils import download_gdrive
+from robustbench import load_model
 
 from dm_wide_resnet import DMWideResNet,CIFAR10_MEAN, CIFAR10_STD,CIFAR100_MEAN, CIFAR100_STD,Swish
 
@@ -137,10 +138,10 @@ class Model_FromScratch(torch.nn.Module):
         self.norm = lambda x: ( x - mu ) / std
         self.backbone = WideResNet(depth=28,widen_factor=10,num_classes=num_classes + 1).to(device)
     def forward(self, x):
-        print("1 : ",x.shape)
+        
         x = self.norm(x)
         z = self.backbone(x)
-        print("2 : ",z.shape)
+        
         return z  
     
 
@@ -156,32 +157,20 @@ class Model_Pretrain(torch.nn.Module):
         
         print("num_classes : ",num_classes)
         if num_classes==10:
-            self.model=DMWideResNet(num_classes=10,
-                                 depth=28,
-                                 width=10,
-                                 activation_fn=Swish,
-                                 mean=CIFAR10_MEAN,
-                                 std=CIFAR10_STD)
-            download_gdrive('16ChNkterCp17BXv-xxqpfedb4u2_CjjS','./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR10.pt')
-            checkpoint = torch.load('./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR10.pt')
-            
-            
-        
+            self.pretrained_model= load_model(model_name='Pang2022Robustness_WRN28_10', dataset='cifar10', threat_model='Linf')
         elif num_classes==20:
-            self.model=DMWideResNet(num_classes=100,
-                             depth=28,
-                             width=10,
-                             activation_fn=Swish,
-                             mean=CIFAR100_MEAN,
-                             std=CIFAR100_STD)
-            download_gdrive('1VDDM_j5M4b6sZpt1Nnhkr8FER3kjE33M','./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR100.pt')            
-            checkpoint = torch.load('./robust_pretrained_models/Pang2022Robustness_WRN28_10_CIFAR100.pt')
+            self.pretrained_model= load_model(model_name='Pang2022Robustness_WRN28_10', dataset='cifar100', threat_model='Linf')
         
-        self.model.load_state_dict(checkpoint, strict=False)
-        # self.backbone = WideResNet(depth=28,widen_factor=10,num_classes=num_classes + 1).to(device)
+        self.original_logits = self.pretrained_model.logits
+        self.pretrained_model.logits = nn.Identity()  # Replace the logits layer with an identity function
+        self.extra_class = nn.Linear(self.original_logits.in_features, 1)
+
+        
 
     def forward(self, x):
         x = self.norm(x)
-        z = self.model(x)
-        
-        return z  
+        features = self.pretrained_model(x)
+        logits_10 = self.original_logits(features)
+        logits_1 = self.extra_class(features)
+        logits_11 = torch.cat([logits_10, logits_1], dim=1)
+        return logits_11
