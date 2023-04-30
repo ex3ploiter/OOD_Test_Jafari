@@ -451,8 +451,6 @@ def run_train( model, train_attack, test_attack, trainloader, testloader, test_s
     criterion = nn.CrossEntropyLoss()
     init_epoch = 0
 
-    clean_aucs = []
-    adv_aucs = []
 
     
     
@@ -461,10 +459,6 @@ def run_train( model, train_attack, test_attack, trainloader, testloader, test_s
     for epoch in range(init_epoch, max_epochs+1):
 
         torch.cuda.empty_cache()
-
-        
-
-
         
         if epoch < max_epochs:
             print(f'====== Starting Training on epoch {epoch}')
@@ -487,7 +481,8 @@ def run_train( model, train_attack, test_attack, trainloader, testloader, test_s
 def run_test(csv_filename, model, train_attack, test_attack, trainloader, testloader, test_step:int, max_epochs:int, device, loss_threshold=1e-3, num_classes=10):
 
 #     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
-
+    clean_aucs = []
+    adv_aucs = []
 
     # Generate a unique filename if the file already exists
     csv_filename = unique_filename(csv_filename)
@@ -500,37 +495,33 @@ def run_test(csv_filename, model, train_attack, test_attack, trainloader, testlo
         header = ['Epoch', 'AUC-Clean', 'Accuracy-Clean', 'AUC-Adversarial', 'Accuracy-Adversarial', 'Train-Loss', 'Train-Accuracy']
         csvwriter.writerow(header)
 
+    test_auc = {}
+    test_accuracy = {}
+
+    print(f'AUC & Accuracy Vanila - Started...')
+    clean_auc, clean_accuracy  = auc_softmax(model=model, epoch=epoch, test_loader=testloader, device=device, num_classes=num_classes)
+    test_auc['Clean'], test_accuracy['Clean'] = clean_auc, clean_accuracy
+    print(f'AUC Vanila - score on epoch {epoch} is: {clean_auc * 100}')
+    print(f'Accuracy Vanila -  score on epoch {epoch} is: {clean_accuracy * 100}')
+    # logs[f'AUC-Clean'], logs[f'Accuracy-Clean'] = clean_auc, clean_accuracy
+
+    attack_name = 'PGD-10'
+    attack = test_attack
+    print(f'AUC & Accuracy Adversarial - {attack_name} - Started...')
+    adv_auc, adv_accuracy = auc_softmax_adversarial(model=model, epoch=epoch, test_loader=testloader, test_attack=attack, device=device, num_classes=num_classes)
+    print(f'AUC Adversairal {attack_name} - score on epoch {epoch} is: {adv_auc * 100}')
+    print(f'Accuracy Adversairal {attack_name} -  score on epoch {epoch} is: {adv_accuracy * 100}')
+
+    torch.cuda.empty_cache()
+
+    clean_aucs.append(clean_auc)
+    adv_aucs.append(adv_auc)
     
-    
-    
-
-            test_auc = {}
-            test_accuracy = {}
-
-            print(f'AUC & Accuracy Vanila - Started...')
-            clean_auc, clean_accuracy  = auc_softmax(model=model, epoch=epoch, test_loader=testloader, device=device, num_classes=num_classes)
-            test_auc['Clean'], test_accuracy['Clean'] = clean_auc, clean_accuracy
-            print(f'AUC Vanila - score on epoch {epoch} is: {clean_auc * 100}')
-            print(f'Accuracy Vanila -  score on epoch {epoch} is: {clean_accuracy * 100}')
-            logs[f'AUC-Clean'], logs[f'Accuracy-Clean'] = clean_auc, clean_accuracy
-
-            attack_name = 'PGD-10'
-            attack = test_attack
-            print(f'AUC & Accuracy Adversarial - {attack_name} - Started...')
-            adv_auc, adv_accuracy = auc_softmax_adversarial(model=model, epoch=epoch, test_loader=testloader, test_attack=attack, device=device, num_classes=num_classes)
-            print(f'AUC Adversairal {attack_name} - score on epoch {epoch} is: {adv_auc * 100}')
-            print(f'Accuracy Adversairal {attack_name} -  score on epoch {epoch} is: {adv_accuracy * 100}')
-
-            torch.cuda.empty_cache()
-
-            clean_aucs.append(clean_auc)
-            adv_aucs.append(adv_auc)
-            
-            # Update the row with the test results
-            with open(csv_filename, 'a', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile)
-                row = [epoch, clean_auc, clean_accuracy, adv_auc, adv_accuracy, train_loss if epoch < max_epochs else '', train_accuracy if epoch < max_epochs else '']
-                csvwriter.writerow(row)
+    # Update the row with the test results
+    with open(csv_filename, 'a', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        row = [epoch, clean_auc, clean_accuracy, adv_auc, adv_accuracy, train_loss if epoch < max_epochs else '', train_accuracy if epoch < max_epochs else '']
+        csvwriter.writerow(row)
 
 
 
