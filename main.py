@@ -86,12 +86,12 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
     plt.ylabel('Accuracy')
     plt.legend()
     # plt.show()
-    plt.savefig(f'./Plots/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.png')
+    plt.savefig(f'./Plots/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}_Pretrain_{pretrain}.png')
 
 
 
     
-    general_logger = GeneralLogger(f'./Logs/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.log')
+    general_logger = GeneralLogger(f'./Logs/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}_Pretrain_{pretrain}.log')
     
     dummy_attack_name= 'PGD-40'
     # dummy_attack = PGD(model, eps=attack_eps, steps=10, alpha=attack_alpha, num_classes=num_classes)
@@ -107,7 +107,7 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
     
     
     
-    checkpoint_path=f'./CheckPoints/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}.cpkt' 
+    checkpoint_path=f'./CheckPoints/{in_dataset}_vs_{out_dataset}_esp_{attack_eps}_steps_{attack_steps}_model_{selected_model_adv}_Pretrain_{pretrain}.cpkt' 
     torch.save(model.state_dict(), checkpoint_path)
 
 
