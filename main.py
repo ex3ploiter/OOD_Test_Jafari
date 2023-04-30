@@ -25,13 +25,13 @@ attack_steps = 10
 
 
 def main(in_dataset,out_dataset,batch_size,pretrain):
-    if pretrain==True:
-        attack_eps = 4/255
-        selected_model_adv="Pang2022Robustness_WRN28_10"
+    # if pretrain==True:
+    #     attack_eps = 4/255
+    #     selected_model_adv="Pang2022Robustness_WRN28_10"
     
-    else:
-        attack_eps = 8/255
-        selected_model_adv="WideResNet"
+    # else:
+    #     attack_eps = 8/255
+    #     selected_model_adv="WideResNet"
 
     attack_alpha = 2.5 * attack_eps / attack_steps
 
@@ -53,11 +53,18 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
         model=Model_FromScratch(num_classes=num_classes).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.5, 0.999))
         lr=0.0001
+        
+        attack_eps = 8/255
+        selected_model_adv="WideResNet"        
 
+    
     else :
         model=Model_Pretrain(num_classes=num_classes).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.5, 0.999))
         lr=0.0001
+        
+        attack_eps = 4/255
+        selected_model_adv="Pang2022Robustness_WRN28_10"        
 
 
     train_attack1 = PGD_CLS(model, eps=attack_eps, steps=10, alpha=attack_alpha)
