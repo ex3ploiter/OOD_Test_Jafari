@@ -49,9 +49,9 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
 
     # model = Model(backbone=selected_model_adv, pretrained=pretrained, num_classes=num_classes).to(device)
 
-    if pretrain=='False':
+    if pretrain=='False': # From Scratch
         model=Model_FromScratch(num_classes=num_classes).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.5, 0.999))
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.1, betas=(0.5, 0.999))
         lr=0.0001
         
         attack_eps = 8/255
@@ -60,11 +60,12 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
     
     else :
         model=Model_Pretrain(num_classes=num_classes).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.5, 0.999))
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01, betas=(0.5, 0.999))
         lr=0.0001
         
         attack_eps = 4/255
         selected_model_adv="Pang2022Robustness_WRN28_10"        
+    
     attack_alpha = 2.5 * attack_eps / attack_steps
 
     train_attack1 = PGD_CLS(model, eps=attack_eps, steps=10, alpha=attack_alpha)
