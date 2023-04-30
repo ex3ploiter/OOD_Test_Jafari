@@ -33,7 +33,7 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
     #     attack_eps = 8/255
     #     selected_model_adv="WideResNet"
 
-    attack_alpha = 2.5 * attack_eps / attack_steps
+    
 
 
     for folder in ['./Results/','./CheckPoints/','./Logs/','./Plots/']:
@@ -65,7 +65,7 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
         
         attack_eps = 4/255
         selected_model_adv="Pang2022Robustness_WRN28_10"        
-
+    attack_alpha = 2.5 * attack_eps / attack_steps
 
     train_attack1 = PGD_CLS(model, eps=attack_eps, steps=10, alpha=attack_alpha)
     test_attack = PGD_MSP(model, eps=attack_eps, steps=10, alpha=attack_alpha, num_classes=num_classes)
