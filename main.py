@@ -52,7 +52,7 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
     if pretrain=='False': # From Scratch
         model=Model_FromScratch(num_classes=num_classes).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.1, betas=(0.5, 0.999))
-        lr=0.0001
+        lr=0.1
         
         attack_eps = 8/255
         selected_model_adv="WideResNet"        
@@ -61,7 +61,7 @@ def main(in_dataset,out_dataset,batch_size,pretrain):
     else :
         model=Model_Pretrain(num_classes=num_classes).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, betas=(0.5, 0.999))
-        lr=0.0001
+        lr=0.01
         
         attack_eps = 4/255
         selected_model_adv="Pang2022Robustness_WRN28_10"        
