@@ -1,7 +1,6 @@
 import math
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class BasicBlock(nn.Module):
@@ -26,7 +25,7 @@ class BasicBlock(nn.Module):
             out = self.relu1(self.bn1(x))
         out = self.relu2(self.bn2(self.conv1(out if self.equalInOut else x)))
         if self.droprate > 0:
-            out = F.dropout(out, p=self.droprate, training=self.training)
+            out = torch.nn.functional.dropout(out, p=self.droprate, training=self.training)
         out = self.conv2(out)
         return torch.add(x if self.equalInOut else self.convShortcut(x), out)
 
@@ -78,6 +77,6 @@ class WideResNet(nn.Module):
         out = self.block2(out)
         out = self.block3(out)
         out = self.relu(self.bn1(out))
-        out = F.avg_pool2d(out, 8)
+        out = torch.nn.functional.avg_pool2d(out, 8)
         out = out.view(-1, self.nChannels)
         return self.fc(out)

@@ -131,11 +131,12 @@ def getLoaders(in_dataset,out_dataset,batch_size):
     if out_dataset in ["MNIST", "FashionMNIST"]:
         transform_32_test.insert(1, transforms.Grayscale(num_output_channels=3))
 
-    train_dataset = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=True, download=True, transform=transforms.Compose(transform_32))')
-    test_dataset_in = eval(f'torchvision.datasets.{in_dataset}("./{in_dataset}", train=False, download=True, transform=transforms.Compose(transform_32))')
+    train_dataset = eval(f'torchvision.datasets.{in_dataset}("../data/{in_dataset}", train=True, download=True, transform=transforms.Compose(transform_32))')
+    test_dataset_in = eval(f'torchvision.datasets.{in_dataset}("../data/{in_dataset}", train=False, download=True, transform=transforms.Compose(transform_32))')
     
     if out_dataset in ['MNIST','CIFAR10','CIFAR100']:
-      test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("./{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_32_test))')
+      test_dataset_out = eval(f'torchvision.datasets.{out_dataset}("../data/{out_dataset}", train=False, download=True, transform=transforms.Compose(transform_32_test))')
+      test_dataset_out.targets = [num_classes for target in train_dataset.targets]
     
     elif out_dataset =='LSUN':
         
@@ -163,6 +164,7 @@ def getLoaders(in_dataset,out_dataset,batch_size):
 
 
         test_dataset_out = eval(f"torchvision.datasets.Places365('./val_256', split = 'val',small = True, transform=transforms.Compose(transform_32_test))")
+        test_dataset_out.targets = [num_classes for target in train_dataset.targets]
         
 
     elif out_dataset =='COIL-100':
@@ -184,7 +186,7 @@ def getLoaders(in_dataset,out_dataset,batch_size):
         test_dataset_in.targets = sparse2coarse(test_dataset_in.targets)
 
     # Change out dataset targets
-    test_dataset_out.targets = [num_classes for target in train_dataset.targets]
+    # test_dataset_out.targets = [num_classes for target in train_dataset.targets]
 
     # Load ImageNet dataset
     imagenet_data = torch.from_numpy(np.load("./OE_imagenet_32x32.npy"))
@@ -208,7 +210,7 @@ def getLoaders(in_dataset,out_dataset,batch_size):
 
     trainloader = DataLoader(trainset, shuffle=True, batch_size=batch_size,num_workers=2)
     testloader = DataLoader(testset, shuffle=False, batch_size=batch_size//2,num_workers=2)
-    shuffled_testloader = DataLoader(testset, shuffle=True, batch_size=batch_size//2,num_workers=2)
+    shuffled_testloader = DataLoader(testset, shuffle=True, batch_size=batch_size//2)
 
 
     print(f"Length of train dataset: {len(trainset)}")

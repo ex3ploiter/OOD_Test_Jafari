@@ -136,13 +136,14 @@ class Model_FromScratch(torch.nn.Module):
     def __init__(self, num_classes: int):
         super().__init__()
         self.norm = lambda x: ( x - mu ) / std
-        self.backbone = WideResNet(depth=28,widen_factor=10,num_classes=num_classes + 1).to(device)
+        self.backbone = WideResNet(28, num_classes+1, 10,  dropRate=0.0).to(device)
+        
     def forward(self, x):
         
-        x = self.norm(x)
-        z = self.backbone(x)
+        # x = self.norm(x)
+        x = self.backbone(x)
         
-        return z  
+        return x
     
 
 

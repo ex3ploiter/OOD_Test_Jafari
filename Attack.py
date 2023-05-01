@@ -502,8 +502,8 @@ class Attack(object):
             attacks[name+"."+str(num)] = value
             for subname, subvalue in value.__dict__.get('_attacks').items():
                 attacks[name+"."+subname] = subvalue
-                
-                
+
+
 import torch
 import torch.nn as nn
 
@@ -727,4 +727,4 @@ class PGD_CLS(Attack):
                                 min=-self.eps, max=self.eps)
             adv_images = torch.clamp(images + delta, min=0, max=1).detach()
 
-        return  adv_images                    
+        return  adv_images
